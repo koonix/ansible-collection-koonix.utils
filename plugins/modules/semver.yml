@@ -1,0 +1,108 @@
+DOCUMENTATION:
+  module: semver
+  short_description: find tags and releases of remote repositories
+  description:
+    - Find and return the matching tag or release of a remote repository.
+  notes:
+    - Requires `curl`, `awk`,
+  options:
+    option_name:
+      description: describe this config option
+      default: default value for this config option
+      env:
+        - name: NAME_OF_ENV_VAR
+      ini:
+        - section: section_of_ansible.cfg_where_this_config_option_is_defined
+          key: key_used_in_ansible.cfg
+      vars:
+        - name: name_of_ansible_var
+        - name: name_of_second_var
+          version_added: X.x
+      required: True
+      type: boolean
+      version_added: 0.1.0
+
+EXAMPLES: # TODO: write examples
+
+# DOCUMENTATION = r'''
+# ---
+# module: cronvar
+# short_description: Manage variables in crontabs
+# description:
+#   - Use this module to manage crontab variables.
+#   - This module allows you to create, update, or delete cron variable definitions.
+# extends_documentation_fragment:
+#   - community.general.attributes
+# attributes:
+#   check_mode:
+#     support: none
+#   diff_mode:
+#     support: none
+# options:
+#   name:
+#     description:
+#       - Name of the crontab variable.
+#     type: str
+#     required: true
+#   value:
+#     description:
+#       - The value to set this variable to.
+#       - Required if I(state=present).
+#     type: str
+#   insertafter:
+#     description:
+#       - If specified, the variable will be inserted after the variable specified.
+#       - Used with I(state=present).
+#     type: str
+#   insertbefore:
+#     description:
+#       - Used with I(state=present). If specified, the variable will be inserted
+#         just before the variable specified.
+#     type: str
+#   state:
+#     description:
+#       - Whether to ensure that the variable is present or absent.
+#     type: str
+#     choices: [ absent, present ]
+#     default: present
+#   user:
+#     description:
+#       - The specific user whose crontab should be modified.
+#       - This parameter defaults to C(root) when unset.
+#     type: str
+#   cron_file:
+#     description:
+#       - If specified, uses this file instead of an individual user's crontab.
+#       - Without a leading C(/), this is assumed to be in I(/etc/cron.d).
+#       - With a leading C(/), this is taken as absolute.
+#     type: str
+#   backup:
+#     description:
+#       - If set, create a backup of the crontab before it is modified.
+#         The location of the backup is returned in the C(backup) variable by this module.
+#     type: bool
+#     default: false
+# requirements:
+#   - cron
+# author:
+# - Doug Luce (@dougluce)
+# '''
+#
+# EXAMPLES = r'''
+# - name: Ensure entry like "EMAIL=doug@ansibmod.con.com" exists
+#   community.general.cronvar:
+#     name: EMAIL
+#     value: doug@ansibmod.con.com
+#
+# - name: Ensure a variable does not exist. This may remove any variable named "LEGACY"
+#   community.general.cronvar:
+#     name: LEGACY
+#     state: absent
+#
+# - name: Add a variable to a file under /etc/cron.d
+#   community.general.cronvar:
+#     name: LOGFILE
+#     value: /var/log/yum-autoupdate.log
+#     user: root
+#     cron_file: ansible_yum-autoupdate
+# '''

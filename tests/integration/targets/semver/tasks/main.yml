@@ -1,0 +1,105 @@
+- ansible.builtin.import_tasks: deps.yml
+
+- name: github
+  koonix.utils.semver:
+    repo: github/syncthing/syncthing
+    pattern: 1.18***
+  register: semver
+
+- ansible.builtin.assert:
+    that: semver.changed == false and semver.result == '1.18.6'
+
+- name: github + test_match + test_no_match
+  koonix.utils.semver:
+    repo: github/torvalds/linux
+    pattern: 5.*-rc2
+    test_match: 5.1-rc2
+    test_no_match: 5.3.4-rc2
+  register: semver
+
+- ansible.builtin.assert:
+    that: semver.result == 'v5.9-rc2'
+
+- name: false test_match + test_no_match
+  koonix.utils.semver:
+    repo: github/torvalds/linux
+    pattern: 5.**
+    test_match:
+      - 5.1
+      - 5.2.3
+      - 5.4.5-rc1
+    test_no_match:
+      - 3.1
+      - 4.2
+  register: semver
+  failed_when: false
+
+- ansible.builtin.assert:
+    that: semver.failed == true and 'test' in semver.msg
+
+- name: test_match + false test_no_match
+  koonix.utils.semver:
+    repo: github/torvalds/linux
+    pattern: 5.**
+    test_match:
+      - 5.1
+      - 5.2.3
+      - 5.4.5
+    test_no_match:
+      - 4.2
+      - 5.3
+  register: semver
+  failed_when: false
+
+- ansible.builtin.assert:
+    that: semver.failed == true and 'test' in semver.msg
+
+- name: gitlab + egrep
+  koonix.utils.semver:
+    repo: gitlab/AuroraOSS/AuroraStore
+    method: egrep
+    pattern: ^[vV]?2\.0\.[0-9]+-β$
+  register: semver
+
+- ansible.builtin.assert:
+    that: semver.result == 'v2.0.5-β'
+
+- name: gitlab + glob + third-party host
+  koonix.utils.semver:
+    repo: gitlab/gitlab.archlinux.org/archlinux/aurweb
+    method: glob
+    pattern: v3.*
+  register: semver
+
+- ansible.builtin.assert:
+    that: semver.result == 'v3.5.1'
+
+- name: codeberg + substring
+  koonix.utils.semver:
+    repo: codeberg/Freeyourgadget/Gadgetbridge
+    method: substring
+    pattern: 0.69
+  register: semver
+
+- ansible.builtin.assert:
+    that: "'0.69' in semver.result"
+
+- name: dockerhub + pcre
+  koonix.utils.semver:
+    repo: dockerhub/nginx
+    method: pcre
+    pattern: ^1\.19\.\d+-pe\w{2}\b
+  register: semver
+
+- ansible.builtin.assert:
+    that: semver.result == '1.19.10-perl'
+
+- name: dockerhub + grep
+  koonix.utils.semver:
+    repo: dockerhub/grafana/grafana
+    method: grep
+    pattern: ^8\.5\.2\+$
+  register: semver
+
+- ansible.builtin.assert:
+    that: semver.result == '8.5.22'

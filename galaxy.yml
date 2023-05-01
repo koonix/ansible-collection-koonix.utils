@@ -1,0 +1,19 @@
+namespace: koonix
+name: semver
+version: 0.1.0
+description: your collection description
+repository: https://github.com/koonix/ansible-collections
+issues: https://github.com/koonix/ansible-collections/issues
+authors:
+  - koonix <me@koonix.org>
+license:
+  - Unlicense
+tags:
+  - collection
+  - module
+  - version
+  - vcs
+  - scm
+  - github
+  - dockerhub
+readme: README.md
