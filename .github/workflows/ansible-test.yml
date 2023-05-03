@@ -1,4 +1,4 @@
-name: Test the collection usint ansible-test
+name: ansible-test
 
 on:
   workflow_dispatch: {}
