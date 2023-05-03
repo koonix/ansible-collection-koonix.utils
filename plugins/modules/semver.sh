@@ -23,28 +23,33 @@ declare -A _outputs=(
 	[result]='string'
 )
 
+prepare_inputs()
+{
+	METHOD=${METHOD,,}
+}
+
+check_inputs()
+{
+	if [[ -z ${REPO:-} ]]; then
+		fail "'repo' unspecified"
+	fi
+	case $METHOD in
+		literal|substring|glob|[eb]regex|pcre|special) ;;
+		'') fail "'method' unspecified" ;;
+		*) fail "unknown 'method': '$METHOD'" ;;
+	esac
+}
+
 # ================
 # = main
 # ================
 
 main()
 {
-	# print module outputs on exit
-	trap output EXIT
-
-	# prepare the inputs
-	METHOD=${METHOD,,}
-
 	run_tests
-
-	RESULT=$(get_version) && code=$? || code=$?
-
-	case $code in
-		0) succeed "got the version successfully" ;;
-		2) fail "'provider' unspecified or unknown" ;;
-	esac
-
-	[[ ${FAILED:-} != false ]] && return 1
+	if RESULT=$(get_version); then
+		succeed 'got the version successfully'
+	fi
 }
 
 # ================
@@ -57,7 +62,8 @@ get_version()
 		github) get_version_github ;;
 		gitlab|codeberg|dockerhub|sourcehut)
 			get_version_paginate "${PROVIDER}_api" ;;
-		*) return 2 ;;
+		'') fail "'provider' unspecified" ;;
+		*) fail "unknown 'provider': '$PROVIDER'" ;;
 	esac
 	return $(( ! ! $? ))
 }
@@ -231,36 +237,6 @@ get_header()
 }
 
 # ================
-# = output
-# ================
-
-output()
-{
-	local var type json
-
-	_outputs[msg]='string'
-	_outputs[failed]='boolean'
-
-	[[ -z ${FAILED:-} ]] && FAILED=true
-	[[ $FAILED != false ]] && [[ -z ${MSG:-} ]] && return
-
-	json='{'
-	for var in "${!_outputs[@]}"; do
-		type=${_outputs[$var]}
-		var=${var^^}
-		if [[ -z ${!var:-} ]]; then
-			declare "$var=null"
-		elif [[ $type == string ]]; then
-			declare "$var=$(jq --null-input --arg str "${!var}" '$str')"
-		fi
-		json="$json\"${var,,}\":${!var},"
-	done
-	json="${json%,}}"
-
-	prnt "$json"
-}
-
-# ================
 # = utilities
 # ================
 
@@ -309,6 +285,37 @@ urldecode()
 }
 
 # ================
+# = output
+# ================
+
+trap output EXIT
+output()
+{
+	local var type json
+
+	_outputs[msg]='string'
+	_outputs[failed]='boolean'
+
+	[[ -z ${FAILED:-} ]] && FAILED=true
+	[[ $FAILED != false ]] && [[ -z ${MSG:-} ]] && return
+
+	json='{'
+	for var in "${!_outputs[@]}"; do
+		type=${_outputs[$var]}
+		var=${var^^}
+		if [[ -z ${!var:-} ]]; then
+			declare "$var=null"
+		elif [[ $type == string ]]; then
+			declare "$var=$(jq --null-input --arg str "${!var}" '$str')"
+		fi
+		json="$json\"${var,,}\":${!var},"
+	done
+	json="${json%,}}"
+
+	prnt "$json"
+}
+
+# ================
 # = init outputs
 # ================
 
@@ -345,9 +352,11 @@ for var in "${!_inputs[@]}"; do
 done
 
 [[ ! -d $_ANSIBLE_TMPDIR ]] && _ANSIBLE_TMPDIR=${TMPDIR:-/tmp}
+command -v prepare_inputs >/dev/null && prepare_inputs
+command -v check_inputs   >/dev/null && check_inputs
 
 # ================
-# = run inits
+# = run _init_*()
 # ================
 
 while IFS= read -r fn; do
@@ -359,5 +368,6 @@ done <<< "$(compgen -A function)"
 # ================
 
 main "$@"
+[[ ${FAILED:-} != false ]] && exit 1
 
 # vim:noexpandtab
