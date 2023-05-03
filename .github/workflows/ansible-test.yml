@@ -1,0 +1,29 @@
+name: Test the collection usint ansible-test
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - master
+      - devel
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Sanity tests
+        uses: ansible-community/ansible-test-gh-action@release/v1
+        with:
+          testing-type: sanity
+          docker-image: default
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Integration tests
+        uses: ansible-community/ansible-test-gh-action@release/v1
+        with:
+          testing-type: integration
+          docker-image: default
+          integration-retry-on-error: 'true'
