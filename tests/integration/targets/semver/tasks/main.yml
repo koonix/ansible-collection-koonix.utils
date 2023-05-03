@@ -35,10 +35,10 @@
       - 3.1
       - 4.2
   register: semver
-  failed_when: false
+  failed_when: semver.failed == true
 
 - ansible.builtin.assert:
-    that: semver.failed == true and 'test' in semver.msg
+    that: 'test' in semver.msg and 'fail' in semver.msg
 
 - name: test_match + false test_no_match
   semver:
@@ -53,10 +53,10 @@
       - 4.2
       - 5.3
   register: semver
-  failed_when: false
+  failed_when: semver.failed == true
 
 - ansible.builtin.assert:
-    that: semver.failed == true and 'test' in semver.msg
+    that: 'test' in semver.msg and 'fail' in semver.msg
 
 - name: gitlab + egrep
   semver:
