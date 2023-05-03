@@ -2,11 +2,17 @@ DOCUMENTATION:
 
   module: semver
   author: koonix (me@koonix.org)
-  short_description: Finds tags and releases of remote repositories
+  short_description: Find tags and releases of remote repositories
   description:
-    - Searches for and returns the matching tag or release of a remote repository.
-  notes:
-    - Requires `bash`, `perl`, `curl`, `awk`, `jq`, `yq` to be installed on host.
+    - Search for and return the matching tag or release of a remote repository.
+
+  requirements:
+    - bash
+    - perl
+    - curl
+    - awk
+    - jq
+    - yq
 
   attributes:
     check_mode:
@@ -44,7 +50,7 @@ DOCUMENTATION:
       type: str
       default: '**'
       description:
-        - The pattern to
+        - The pattern to match against the targets
       version_added: 0.1.0
 
     method:
@@ -52,22 +58,22 @@ DOCUMENTATION:
       choices: [ literal, substring, glob, bregex, eregex, pcre, special ]
       default: special
       description:
-        - `"literal"` matches the entire string literally.
-        - `"substring"` matches substrings.
-        - `"glob"` matches using shell-style wildcards.
-        - `"bregex"` matches using POSIX Basic Regular Expression.
-        - `"egexre"` matches using POSIX Extended Regular Expression.
-        - `"pcre"` matches using Perl-Compatible Regular Expression.
+        - `"literal"`: match the entire string literally.
+        - `"substring"`: match substrings.
+        - `"glob"`: match using shell-style wildcards.
+        - `"bregex"`: match using POSIX Basic Regular Expression.
+        - `"egexre"`: match using POSIX Extended Regular Expression.
+        - `"pcre"`: match using Perl-Compatible Regular Expression.
         - |
-          `"special"` matches per the following examples:
-            - `1.2.3` matches `1.2.3` and `v1.2.3`.
-            - `v1.2.3` matches `1.2.3` and `v1.2.3`.
-            - `1.2.3` does not matches `1.2` or `1.2.3.4`.
-            - `1.2.*` matches `1.2.3` and `1.2.4` but not `1.2` or `1.2.3.4`.
-            - `1.2.**` matches `1.2.3` and `1.2.3.4` but not `1.2`.
-            - `1.2***` matches `1.2` and `1.2.3` but not `1.21`.
-            - `1.2.**` does not match `1.2.3-rc1`.
-            - `1.2.**-rc*` matches `1.2.3.4-rc8`.
+          `"special"`: use `*`, `**` and `***` to match per the following examples:
+            - `1.2.3`: match `1.2.3` and `v1.2.3`.
+            - `v1.2.3`: match `1.2.3` and `v1.2.3`.
+            - `1.2.3`: don't match `1.2` or `1.2.3.4`.
+            - `1.2.*`: match `1.2.3` and `1.2.33` but not `1.2` or `1.2.3.4`.
+            - `1.2.**`: match `1.2.3` and `1.2.33.4` but not `1.2`.
+            - `1.2***`: match `1.2` and `1.2.3` but not `1.21`.
+            - `1.2.**`: don't match `1.2.3-rc1`.
+            - `1.2.**-rc*`: match `1.2.3.4-rc8`.
       version_added: 0.1.0
 
     token:
