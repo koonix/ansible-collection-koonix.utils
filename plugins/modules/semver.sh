@@ -127,7 +127,7 @@ gitlab_api()
 {
 	local page=$1 base="https://${INSTANCE:-gitlab.com}/api/v4/projects"
 	request \
-		"$base/$REPO/repository/tags" \
+		"$base/$(urlencode "$REPO")/repository/tags" \
 		--data-urlencode "page=$page" \
 		--data-urlencode 'per_page=1000' \
 		| jq --raw-output --exit-status '.[].name'
@@ -288,6 +288,24 @@ succeed()
 {
 	FAILED=false
 	MSG="$*"
+}
+
+urlencode()
+{
+	local len=${#1} LC_COLLATE=C c
+	for (( i = 0; i < len; i++ )); do
+		c=${1:$i:1}
+		case $c in
+			[a-zA-Z0-9.~_-]) printf '%s' "$c" ;;
+			*) printf '%%%02X' "'$c" ;;
+		esac
+	done
+}
+
+urldecode()
+{
+	local str=${1//+/ }
+	printf '%b' "${str//%/\\x}"
 }
 
 # ================
