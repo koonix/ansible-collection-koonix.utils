@@ -35,7 +35,7 @@
       - 3.1
       - 4.2
   register: semver
-  failed_when: semver.failed == true
+  failed_when: semver.failed != true
 
 - ansible.builtin.assert:
     that: "'test' in semver.msg and 'fail' in semver.msg"
@@ -53,7 +53,7 @@
       - 4.2
       - 5.3
   register: semver
-  failed_when: semver.failed == true
+  failed_when: semver.failed != true
 
 - ansible.builtin.assert:
     that: "'test' in semver.msg and 'fail' in semver.msg"
