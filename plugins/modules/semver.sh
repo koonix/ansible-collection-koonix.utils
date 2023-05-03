@@ -37,15 +37,9 @@ main()
 	RESULT=$(get_version) && code=$? || code=$?
 
 	case $code in
-		0)
-			FAILED=false
-			MSG="got the version successfully" ;;
-		1)
-			FAILED=true RESULT=null
-			MSG="couldn't get the version" ;;
-		2)
-			FAILED=true RESULT=null
-			MSG="'github' or 'gitlab' or 'dockerhub' needs to be specified" ;;
+		0) FAILED=false MSG="got the version successfully" ;;
+		1) die "couldn't get the version" ;;
+		2) die "unknown provider" ;;
 	esac
 
 	output
