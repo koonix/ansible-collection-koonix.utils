@@ -237,7 +237,10 @@ output()
 
 	[[ -z ${FAILED:-} ]] && FAILED=true
 
-	[[ $FAILED == true ]] && prnt "$MSG"
+	if [[ $FAILED == true ]]; then
+        prnt "$MSG" >&2
+        return
+    fi
 
 	json='{'
 	for var in "${!_outputs[@]}"; do
