@@ -1,0 +1,12 @@
+- name: Install yq
+  ansible.builtin.pip:
+    name: yq
+
+- name: Install packages
+  ansible.builtin.package:
+    state: present
+    name:
+      - bash
+      - perl
+      - curl
+      - jq
