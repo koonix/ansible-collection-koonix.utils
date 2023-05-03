@@ -20,7 +20,7 @@
   register: semver
 
 - ansible.builtin.assert:
-    that: semver.result == 'v5.9-rc2'
+    that: semver.result == 'v5.19-rc2'
 
 - name: false test_match + test_no_match
   semver:

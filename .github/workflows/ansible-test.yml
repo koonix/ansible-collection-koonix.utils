@@ -8,6 +8,7 @@ on:
       - devel
 
 jobs:
+
   sanity:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -17,7 +18,9 @@ jobs:
         with:
           testing-type: sanity
           docker-image: default
+          # sanity checks of modules is broken, so remove modules before test
           pre-test-cmd: rm -rf plugins/modules/*
+
   integration:
     runs-on: ubuntu-latest
     timeout-minutes: 10
