@@ -48,7 +48,7 @@ main()
 			MSG="'github' or 'gitlab' or 'dockerhub' needs to be specified" ;;
 	esac
 
-	output
+	# output
 }
 
 # ================
