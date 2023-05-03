@@ -6,7 +6,7 @@ DOCUMENTATION:
   description:
     - Searches for and returns the matching tag or release of a remote repository.
   notes:
-    - Requires `perl`, `curl`, `awk`, `jq`, `yq` to be installed on host.
+    - Requires `bash`, `perl`, `curl`, `awk`, `jq`, `yq` to be installed on host.
 
   attributes:
     check_mode:

@@ -1,5 +1,5 @@
 #!/bin/bash
-# dependencies: perl, curl, awk, jq, yq
+# dependencies: bash, perl, curl, awk, jq, yq
 
 # exit on any errors
 set -eu -o pipefail
@@ -278,9 +278,9 @@ mktempfn()
 
 die()
 {
-	MSG="$1"
-	FAILED=true
-	output
+	# MSG="$1"
+	# FAILED=true
+	# output
 	exit 1
 }
 
