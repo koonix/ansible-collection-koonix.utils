@@ -162,7 +162,7 @@ sourcehut_api()
 dockerhub_api()
 {
 	local page=$1 repo=$REPO base='https://hub.docker.com/v2/repositories'
-	[[ repo == */* ]] || repo=library/$repo
+	[[ $repo == */* ]] || repo=library/$repo
 	request \
 		"$base/$repo/tags" \
 		--data-urlencode "page=$page" \
