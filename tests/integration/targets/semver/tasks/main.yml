@@ -1,5 +1,20 @@
 - ansible.builtin.import_tasks: deps.yml
 
+- name: nonexistent provider
+  semver:
+    provider: nonexistent
+    repo: repo
+  register: semver
+  failed_when: semver.failed != true
+
+- name: nonexistent method
+  semver:
+    provider: github
+    repo: repo
+    method: nonexistent
+  register: semver
+  failed_when: semver.failed != true
+
 - name: github
   semver:
     provider: github
@@ -58,11 +73,11 @@
 - ansible.builtin.assert:
     that: "'test' in semver.msg and 'fail' in semver.msg"
 
-- name: gitlab + egrep
+- name: gitlab + eregex
   semver:
     provider: gitlab
     repo: AuroraOSS/AuroraStore
-    method: egrep
+    method: eregex
     pattern: ^[vV]?2\.0\.[0-9]+-β$
   register: semver
 
@@ -103,11 +118,11 @@
 - ansible.builtin.assert:
     that: semver.result == '1.19.10-perl'
 
-- name: dockerhub + grep
+- name: dockerhub + bregex
   semver:
     provider: dockerhub
     repo: grafana/grafana
-    method: grep
+    method: bregex
     pattern: ^8\.5\.2\+$
   register: semver
 
