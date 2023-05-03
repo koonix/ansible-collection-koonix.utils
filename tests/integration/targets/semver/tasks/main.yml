@@ -2,7 +2,8 @@
 
 - name: github
   koonix.utils.semver:
-    repo: github/syncthing/syncthing
+    provider: github
+    repo: syncthing/syncthing
     pattern: 1.18***
   register: semver
 
@@ -11,7 +12,8 @@
 
 - name: github + test_match + test_no_match
   koonix.utils.semver:
-    repo: github/torvalds/linux
+    provider: github
+    repo: torvalds/linux
     pattern: 5.*-rc2
     test_match: 5.1-rc2
     test_no_match: 5.3.4-rc2
@@ -22,7 +24,8 @@
 
 - name: false test_match + test_no_match
   koonix.utils.semver:
-    repo: github/torvalds/linux
+    provider: github
+    repo: torvalds/linux
     pattern: 5.**
     test_match:
       - 5.1
@@ -39,7 +42,8 @@
 
 - name: test_match + false test_no_match
   koonix.utils.semver:
-    repo: github/torvalds/linux
+    provider: github
+    repo: torvalds/linux
     pattern: 5.**
     test_match:
       - 5.1
@@ -56,7 +60,8 @@
 
 - name: gitlab + egrep
   koonix.utils.semver:
-    repo: gitlab/AuroraOSS/AuroraStore
+    provider: gitlab
+    repo: AuroraOSS/AuroraStore
     method: egrep
     pattern: ^[vV]?2\.0\.[0-9]+-β$
   register: semver
@@ -66,7 +71,9 @@
 
 - name: gitlab + glob + third-party host
   koonix.utils.semver:
-    repo: gitlab/gitlab.archlinux.org/archlinux/aurweb
+    provider: gitlab
+    instance: gitlab.archlinux.org
+    repo: archlinux/aurweb
     method: glob
     pattern: v3.*
   register: semver
@@ -76,7 +83,8 @@
 
 - name: codeberg + substring
   koonix.utils.semver:
-    repo: codeberg/Freeyourgadget/Gadgetbridge
+    provider: codeberg
+    repo: Freeyourgadget/Gadgetbridge
     method: substring
     pattern: 0.69
   register: semver
@@ -86,7 +94,8 @@
 
 - name: dockerhub + pcre
   koonix.utils.semver:
-    repo: dockerhub/nginx
+    provider: dockerhub
+    repo: nginx
     method: pcre
     pattern: ^1\.19\.\d+-pe\w{2}\b
   register: semver
@@ -96,7 +105,8 @@
 
 - name: dockerhub + grep
   koonix.utils.semver:
-    repo: dockerhub/grafana/grafana
+    provider: dockerhub
+    repo: grafana/grafana
     method: grep
     pattern: ^8\.5\.2\+$
   register: semver

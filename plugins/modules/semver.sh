@@ -1,5 +1,5 @@
 #!/bin/bash
-# dependencies: perl, curl, jq, yq
+# dependencies: perl, curl, awk, jq, yq
 
 # exit on any errors
 set -eu -o pipefail
@@ -10,6 +10,8 @@ set -eu -o pipefail
 
 declare -A _inputs=(
 	[repo]=''
+	[provider]=''
+	[instance]=''
 	[pattern]='**'
 	[method]='special'
 	[token]=''
@@ -55,13 +57,10 @@ main()
 
 get_version()
 {
-	local repo type site
-	type=${REPO%%/*}
-	repo=${REPO#"$type/"}
-	case $type in
-		github) get_version_github "$repo" ;;
+	case $PROVIDER in
+		github) get_version_github ;;
 		gitlab|codeberg|dockerhub|sourcehut)
-			get_version_paginate "${type}_api" "$repo" ;;
+			get_version_paginate "${PROVIDER}_api" ;;
 		*) return 2 ;;
 	esac
 	return $(( ! ! $? ))
@@ -69,10 +68,10 @@ get_version()
 
 get_version_paginate()
 {
-	local fn=$1 repo=$2 page=0 list ver
+	local fn=$1 page=0 list ver
 	while :; do
 		(( page++ ))
-		list=$("$fn" "$page" "$repo") || return 1
+		list=$("$fn" "$page") || return 1
 		while IFS= read -r ver; do
 			if match_version "$ver" "$PATTERN"; then
 				prnt "$ver"
@@ -84,9 +83,9 @@ get_version_paginate()
 
 get_version_after()
 {
-	local fn=$1 repo=$2 after list ver
+	local fn=$1 after list ver
 	while :; do
-		list=$("$fn" "${after:-}" "$repo") || return 1
+		list=$("$fn" "${after:-}") || return 1
 		while IFS= read -r ver; do
 			if match_version "$ver" "$PATTERN"; then
 				prnt "$ver"
@@ -99,19 +98,18 @@ get_version_after()
 
 get_version_github()
 {
-	local repo=$1
 	if [[ -n ${TOKEN:-} ]]; then
-		get_version_paginate github_api "$repo"
+		get_version_paginate github_api
 	else
-		get_version_after github_html "$repo"
+		get_version_after github_html
 	fi
 }
 
 github_api()
 {
-	local page=$1 repo=$2 base='https://api.github.com/repos'
+	local page=$1 base='https://api.github.com/repos'
 	request \
-		"$base/$repo/tags" \
+		"$base/$REPO/tags" \
 		--url-query "page=$page" \
 		--url-query 'per_page=1000' \
 		--header 'X-GitHub-Api-Version: 2022-11-28' \
@@ -120,24 +118,20 @@ github_api()
 
 github_html()
 {
-	local after=${1:-} repo=$2 base='https://github.com'
-	local pattern='href="/'"$repo"'/releases/tag/([^"]+)"'
+	local after=${1:-} base='https://github.com'
+	local pattern='href="/'"$REPO"'/releases/tag/([^"]+)"'
 	pattern=${pattern//'/'/'\/'}
 	request \
-		"$base/$repo/tags" \
+		"$base/$REPO/tags" \
 		${after:+--url-query "after=$after"} \
 		| perl -ne 'print "$1\n" if /'"$pattern"'/'
 }
 
 gitlab_api()
 {
-	local page=$1 repo=$2 site base
-	site=$(get_site "$repo" 'gitlab.com')
-	repo=${repo#${site:-}}
-	repo=${repo/'/'/'%2F'}
-	base="https://$site/api/v4/projects"
+	local page=$1 base="https://${INSTANCE:-gitlab.com}/api/v4/projects"
 	request \
-		"$base/$repo/repository/tags" \
+		"$base/$REPO/repository/tags" \
 		--url-query "page=$page" \
 		--url-query 'per_page=1000' \
 		| jq --raw-output --exit-status '.[].name'
@@ -145,9 +139,9 @@ gitlab_api()
 
 codeberg_api()
 {
-	local page=$1 repo=$2 base='https://codeberg.org/api/v1/repos'
+	local page=$1 base='https://codeberg.org/api/v1/repos'
 	request \
-		"$base/$repo/tags" \
+		"$base/$REPO/tags" \
 		--url-query "page=$page" \
 		--url-query 'page_size=1000' \
 		| jq --raw-output --exit-status '.[].name'
@@ -155,9 +149,9 @@ codeberg_api()
 
 sourcehut_api()
 {
-	local page=$1 repo=$2 base='https://sr.ht/api/v1/repos'
+	local page=$1 base='https://sr.ht/api/v1/repos'
 	request \
-		"$base/$repo/tags" \
+		"$base/$REPO/tags" \
 		--url-query "page=$page" \
 		--url-query 'page_size=1000' \
 		| jq --raw-output --exit-status '.[].name'
@@ -165,7 +159,7 @@ sourcehut_api()
 
 dockerhub_api()
 {
-	local page=$1 repo=$2 base='https://hub.docker.com/v2/repositories'
+	local page=$1 repo=$REPO base='https://hub.docker.com/v2/repositories'
 	[[ repo == */* ]] || repo=library/$repo
 	request \
 		"$base/$repo/tags" \
@@ -173,16 +167,6 @@ dockerhub_api()
 		--url-query 'page_size=1000' \
 		--url-query 'ordering=last_updated' \
 		| jq --raw-output --exit-status '.results[].name'
-}
-
-get_site()
-{
-	local repo=$1 default=$2
-	if [[ $repo == */*/* ]]; then
-		prnt "${repo%%/*}"
-	else
-		prnt "$default"
-	fi
 }
 
 run_tests()
@@ -210,8 +194,8 @@ match_version()
 	if [[ $METHOD == special ]] || [[ $METHOD == pcre ]]; then
 		pattern=${pattern//'/'/'\/'}
 		perl -e 'exit(!($ARGV[0] =~ /'"$pattern"'/))' "$version"
-	elif [[ $METHOD == egrep     ]]; then grep -qE "$pattern" <<< "$version"
-	elif [[ $METHOD == grep      ]]; then grep -q "$pattern" <<< "$version"
+	elif [[ $METHOD == eregex    ]]; then grep -qE "$pattern" <<< "$version"
+	elif [[ $METHOD == bregex    ]]; then grep -q "$pattern" <<< "$version"
 	elif [[ $METHOD == glob      ]]; then [[ $version == $pattern ]]
 	elif [[ $METHOD == substring ]]; then [[ $version == *"$pattern"* ]]
 	elif [[ $METHOD == literal   ]]; then [[ $version == "$pattern" ]]

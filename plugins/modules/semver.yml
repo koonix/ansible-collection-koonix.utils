@@ -1,108 +1,148 @@
 DOCUMENTATION:
+
   module: semver
-  short_description: find tags and releases of remote repositories
+  author: koonix (me@koonix.org)
+  short_description: Finds tags and releases of remote repositories
   description:
-    - Find and return the matching tag or release of a remote repository.
+    - Searches for and returns the matching tag or release of a remote repository.
   notes:
-    - Requires `curl`, `awk`,
+    - Requires `perl`, `curl`, `awk`, `jq`, `yq` to be installed on host.
+
+  attributes:
+    check_mode:
+      support: full
+    diff_mode:
+      support: none
+    platform:
+      platforms: posix
+
   options:
-    option_name:
-      description: describe this config option
-      default: default value for this config option
-      env:
-        - name: NAME_OF_ENV_VAR
-      ini:
-        - section: section_of_ansible.cfg_where_this_config_option_is_defined
-          key: key_used_in_ansible.cfg
-      vars:
-        - name: name_of_ansible_var
-        - name: name_of_second_var
-          version_added: X.x
-      required: True
-      type: boolean
+
+    repo:
+      required: true
+      type: str
+      description:
+        - Repository path, in the form of <user>/<repo> (or just <repo> for some providers).
       version_added: 0.1.0
 
-EXAMPLES: # TODO: write examples
+    provider:
+      required: true
+      type: str
+      choices: [ github, dockerhub, gitlab, codeberg, sourcehut ]
+      description:
+        - Provider of the repository.
+      version_added: 0.1.0
 
-# DOCUMENTATION = r'''
-# ---
-# module: cronvar
-# short_description: Manage variables in crontabs
-# description:
-#   - Use this module to manage crontab variables.
-#   - This module allows you to create, update, or delete cron variable definitions.
-# extends_documentation_fragment:
-#   - community.general.attributes
-# attributes:
-#   check_mode:
-#     support: none
-#   diff_mode:
-#     support: none
-# options:
-#   name:
-#     description:
-#       - Name of the crontab variable.
-#     type: str
-#     required: true
-#   value:
-#     description:
-#       - The value to set this variable to.
-#       - Required if I(state=present).
-#     type: str
-#   insertafter:
-#     description:
-#       - If specified, the variable will be inserted after the variable specified.
-#       - Used with I(state=present).
-#     type: str
-#   insertbefore:
-#     description:
-#       - Used with I(state=present). If specified, the variable will be inserted
-#         just before the variable specified.
-#     type: str
-#   state:
-#     description:
-#       - Whether to ensure that the variable is present or absent.
-#     type: str
-#     choices: [ absent, present ]
-#     default: present
-#   user:
-#     description:
-#       - The specific user whose crontab should be modified.
-#       - This parameter defaults to C(root) when unset.
-#     type: str
-#   cron_file:
-#     description:
-#       - If specified, uses this file instead of an individual user's crontab.
-#       - Without a leading C(/), this is assumed to be in I(/etc/cron.d).
-#       - With a leading C(/), this is taken as absolute.
-#     type: str
-#   backup:
-#     description:
-#       - If set, create a backup of the crontab before it is modified.
-#         The location of the backup is returned in the C(backup) variable by this module.
-#     type: bool
-#     default: false
-# requirements:
-#   - cron
-# author:
-# - Doug Luce (@dougluce)
-# '''
-#
-# EXAMPLES = r'''
-# - name: Ensure entry like "EMAIL=doug@ansibmod.con.com" exists
-#   community.general.cronvar:
-#     name: EMAIL
-#     value: doug@ansibmod.con.com
-#
-# - name: Ensure a variable does not exist. This may remove any variable named "LEGACY"
-#   community.general.cronvar:
-#     name: LEGACY
-#     state: absent
-#
-# - name: Add a variable to a file under /etc/cron.d
-#   community.general.cronvar:
-#     name: LOGFILE
-#     value: /var/log/yum-autoupdate.log
-#     user: root
-#     cron_file: ansible_yum-autoupdate
-# '''
+    instance:
+      type: str
+      description:
+        - The instance domain name of the provider, in case the provider supports third party instances.
+        - If not specified, use the official or main instance.
+      version_added: 0.1.0
+
+    pattern:
+      type: str
+      default: '**'
+      description:
+        - The pattern to
+      version_added: 0.1.0
+
+    method:
+      type: str
+      choices: [ literal, substring, glob, bregex, eregex, pcre, special ]
+      default: special
+      description:
+        - `"literal"` matches the entire string literally.
+        - `"substring"` matches substrings.
+        - `"glob"` matches using shell-style wildcards.
+        - `"bregex"` matches using POSIX Basic Regular Expression.
+        - `"egexre"` matches using POSIX Extended Regular Expression.
+        - `"pcre"` matches using Perl-Compatible Regular Expression.
+        - |
+          `"special"` matches per the following examples:
+            - `1.2.3` matches `1.2.3` and `v1.2.3`.
+            - `v1.2.3` matches `1.2.3` and `v1.2.3`.
+            - `1.2.3` does not matches `1.2` or `1.2.3.4`.
+            - `1.2.*` matches `1.2.3` and `1.2.4` but not `1.2` or `1.2.3.4`.
+            - `1.2.**` matches `1.2.3` and `1.2.3.4` but not `1.2`.
+            - `1.2***` matches `1.2` and `1.2.3` but not `1.21`.
+            - `1.2.**` does not match `1.2.3-rc1`.
+            - `1.2.**-rc*` matches `1.2.3.4-rc8`.
+      version_added: 0.1.0
+
+    token:
+      type: str
+      description:
+        - The authorization token for the provider's API.
+      version_added: 0.1.0
+
+    test_match:
+      type: list
+      elements: str
+      description:
+        - >
+          A list of strings to test the pattern against
+          to fail early in case of errors before querying the provider.
+        - Fails if the pattern doesn't match any of the items.
+      version_added: 0.1.0
+
+    test_no_match:
+      type: list
+      elements: str
+      description:
+        - >
+          A list of strings to test the pattern against
+          to fail early in case of errors before querying the provider.
+        - Fails if the pattern matches any of the items.
+      version_added: 0.1.0
+
+RETURN:
+
+  result:
+    description: The matched tag name
+    type: string
+    sample: v1.2.3
+
+EXAMPLES:
+
+  - name: Get the latest tag of Syncthing with a major of 1
+    koonix.utils.semver:
+      provider: github
+      repo: syncthing/syncthing
+      pattern: 1.**
+    register: semver
+
+  - name: Print the result
+    ansible.builtin.debug:
+      var: semver.result
+
+  - name: Get the latest alpine-based nginx Docker image tag
+    koonix.utils.semver:
+      provider: dockerhub
+      repo: nginx
+      pattern: '**-alpine'
+    register: semver
+
+  - name: Print the result
+    ansible.builtin.debug:
+      var: semver.result
+
+  - name: Get the latest tag of aurweb with a major of 3
+    koonix.utils.semver:
+      provider: gitlab
+      instance: gitlab.archlinux.org
+      repo: archlinux/aurweb
+      pattern: 3***
+      test_match:
+        - 3
+        - 3.1
+        - 3.1.2
+      test_no_match:
+        - 4
+        - 4.1
+        - 4.1.2
+  register: semver
+
+  - name: Print the result
+    ansible.builtin.debug:
+      var: semver.result
