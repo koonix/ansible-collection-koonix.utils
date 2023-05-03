@@ -29,6 +29,9 @@ declare -A _outputs=(
 
 main()
 {
+	# print module outputs on exit
+	trap output EXIT
+
 	# prepare the inputs
 	METHOD=${METHOD,,}
 
@@ -38,11 +41,10 @@ main()
 
 	case $code in
 		0) FAILED=false MSG="got the version successfully" ;;
-		1) die "couldn't get the version" ;;
-		2) die "unknown provider" ;;
+		2) FAILED=true  MSG="'provider' unspecified or unknown" ;;
 	esac
 
-	output
+	[[ ${FAILED:-} != false ]] && return 1
 }
 
 # ================
@@ -236,11 +238,7 @@ output()
 	_outputs[failed]='boolean'
 
 	[[ -z ${FAILED:-} ]] && FAILED=true
-
-	if [[ $FAILED == true ]]; then
-        prnt "$MSG" >&2
-        return
-    fi
+	[[ $FAILED != false ]] && [[ -z ${MSG:-} ]] && return
 
 	json='{'
 	for var in "${!_outputs[@]}"; do
@@ -273,14 +271,6 @@ prnt()
 mktempfn()
 {
 	command mktemp --tmpdir="$_ANSIBLE_TMPDIR" "$@"
-}
-
-die()
-{
-	MSG="$1"
-	FAILED=true
-	output
-	exit 1
 }
 
 # ================
@@ -333,4 +323,4 @@ done <<< "$(compgen -A function)"
 
 main "$@"
 
-# set noexpandtab
+# vim:noexpandtab
