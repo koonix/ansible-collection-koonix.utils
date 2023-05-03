@@ -18,11 +18,8 @@ jobs:
           testing-type: sanity
           docker-image: default
           pre-test-cmd: |-
-            cd plugins/modules
-            for f in *.sh; do
-              [ ! -f "$f" ] && continue
-              sed -i 1q "$f"
-              mv -- "$f" "${f%.sh}"
+            for f in plugins/modules/*.sh; do
+              rm -f "$f"
             done
   integration:
     runs-on: ubuntu-latest

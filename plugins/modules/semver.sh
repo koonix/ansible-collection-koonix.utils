@@ -48,7 +48,7 @@ main()
 			MSG="'github' or 'gitlab' or 'dockerhub' needs to be specified" ;;
 	esac
 
-	# output
+	output
 }
 
 # ================
@@ -110,8 +110,8 @@ github_api()
 	local page=$1 base='https://api.github.com/repos'
 	request \
 		"$base/$REPO/tags" \
-		--url-query "page=$page" \
-		--url-query 'per_page=1000' \
+		--data-urlencode "page=$page" \
+		--data-urlencode 'per_page=1000' \
 		--header 'X-GitHub-Api-Version: 2022-11-28' \
 		| jq --raw-output --exit-status '.[].name'
 }
@@ -123,7 +123,7 @@ github_html()
 	pattern=${pattern//'/'/'\/'}
 	request \
 		"$base/$REPO/tags" \
-		${after:+--url-query "after=$after"} \
+		${after:+--data-urlencode "after=$after"} \
 		| perl -ne 'print "$1\n" if /'"$pattern"'/'
 }
 
@@ -132,8 +132,8 @@ gitlab_api()
 	local page=$1 base="https://${INSTANCE:-gitlab.com}/api/v4/projects"
 	request \
 		"$base/$REPO/repository/tags" \
-		--url-query "page=$page" \
-		--url-query 'per_page=1000' \
+		--data-urlencode "page=$page" \
+		--data-urlencode 'per_page=1000' \
 		| jq --raw-output --exit-status '.[].name'
 }
 
@@ -142,8 +142,8 @@ codeberg_api()
 	local page=$1 base='https://codeberg.org/api/v1/repos'
 	request \
 		"$base/$REPO/tags" \
-		--url-query "page=$page" \
-		--url-query 'page_size=1000' \
+		--data-urlencode "page=$page" \
+		--data-urlencode 'page_size=1000' \
 		| jq --raw-output --exit-status '.[].name'
 }
 
@@ -152,8 +152,8 @@ sourcehut_api()
 	local page=$1 base='https://sr.ht/api/v1/repos'
 	request \
 		"$base/$REPO/tags" \
-		--url-query "page=$page" \
-		--url-query 'page_size=1000' \
+		--data-urlencode "page=$page" \
+		--data-urlencode 'page_size=1000' \
 		| jq --raw-output --exit-status '.[].name'
 }
 
@@ -163,9 +163,9 @@ dockerhub_api()
 	[[ repo == */* ]] || repo=library/$repo
 	request \
 		"$base/$repo/tags" \
-		--url-query "page=$page" \
-		--url-query 'page_size=1000' \
-		--url-query 'ordering=last_updated' \
+		--data-urlencode "page=$page" \
+		--data-urlencode 'page_size=1000' \
+		--data-urlencode 'ordering=last_updated' \
 		| jq --raw-output --exit-status '.results[].name'
 }
 
@@ -208,7 +208,7 @@ request()
 	local code
 	local rlremain rlreset # rate-limit status
 	while :; do
-		command curl -fsSL --request 'GET' --dump-header "$headerfile" \
+		command curl -fsSL --get --request 'GET' --dump-header "$headerfile" \
 			${TOKEN:+--header "Authorization: Bearer $TOKEN"} "$@" \
 			&& code=$? || code=$?
 		[[ $code == 0 ]] && return 0
@@ -242,6 +242,8 @@ output()
 	_outputs[failed]='boolean'
 
 	[[ -z ${FAILED:-} ]] && FAILED=true
+
+	[[ $FAILED == true ]] && prnt "$MSG"
 
 	json='{'
 	for var in "${!_outputs[@]}"; do
@@ -278,9 +280,9 @@ mktempfn()
 
 die()
 {
-	# MSG="$1"
-	# FAILED=true
-	# output
+	MSG="$1"
+	FAILED=true
+	output
 	exit 1
 }
 
@@ -333,3 +335,5 @@ done <<< "$(compgen -A function)"
 # ================
 
 main "$@"
+
+# set noexpandtab
