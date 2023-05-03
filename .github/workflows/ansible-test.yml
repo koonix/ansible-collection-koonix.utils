@@ -17,10 +17,7 @@ jobs:
         with:
           testing-type: sanity
           docker-image: default
-          pre-test-cmd: |-
-            for f in plugins/modules/*.sh; do
-              rm -f "$f"
-            done
+          pre-test-cmd: rm -rf plugins/modules/*
   integration:
     runs-on: ubuntu-latest
     timeout-minutes: 10

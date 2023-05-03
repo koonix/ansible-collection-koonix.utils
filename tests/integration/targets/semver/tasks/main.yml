@@ -8,7 +8,7 @@
   register: semver
 
 - ansible.builtin.assert:
-    that: semver.changed == false and semver.result == '1.18.6'
+    that: semver.changed == false and semver.result == 'v1.18.6'
 
 - name: github + test_match + test_no_match
   semver:
