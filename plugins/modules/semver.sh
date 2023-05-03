@@ -40,8 +40,8 @@ main()
 	RESULT=$(get_version) && code=$? || code=$?
 
 	case $code in
-		0) FAILED=false MSG="got the version successfully" ;;
-		2) FAILED=true  MSG="'provider' unspecified or unknown" ;;
+		0) succeed "got the version successfully" ;;
+		2) fail "'provider' unspecified or unknown" ;;
 	esac
 
 	[[ ${FAILED:-} != false ]] && return 1
@@ -169,10 +169,14 @@ run_tests()
 {
 	local ver
 	for ver in "${TEST_MATCH[@]}"; do
-		match_version "$ver" "$PATTERN" || die "test_match failed: $ver"
+		if ! match_version "$ver" "$PATTERN"; then
+			fail "test_match failed: $ver"
+		fi
 	done
 	for ver in "${TEST_NO_MATCH[@]}"; do
-		match_version "$ver" "$PATTERN" && die "test_no_match failed: $ver" ||:
+		if match_version "$ver" "$PATTERN"; then
+			fail "test_no_match failed: $ver"
+		fi
 	done
 }
 
@@ -273,6 +277,19 @@ mktempfn()
 	command mktemp --tmpdir="$_ANSIBLE_TMPDIR" "$@"
 }
 
+fail()
+{
+	FAILED=true
+	MSG="$*"
+	return 1
+}
+
+succeed()
+{
+	FAILED=false
+	MSG="$*"
+}
+
 # ================
 # = init outputs
 # ================
@@ -301,7 +318,9 @@ for var in "${!_inputs[@]}"; do
 			echo $? >&"$fd"
 		)
 		read -t 0.1 -u "$fd" ret
-		[[ $ret != 0 ]] && die 'failed to parse the inputs using `yq`'
+		if [[ $ret != 0 ]]; then
+			fail 'failed to parse the inputs using `yq`'
+		fi
 	else
 		declare "${var^^}=${!var}"
 	fi
