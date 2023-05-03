@@ -2,10 +2,10 @@ name: ansible-test
 
 on:
   workflow_dispatch: {}
+  pull_request: {}
   push:
     branches:
-      - master
-      - devel
+      - main
 
 jobs:
 
