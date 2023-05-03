@@ -1,0 +1,73 @@
+DOCUMENTATION:
+
+  module: extract
+  author: koonix (me@koonix.org)
+  short_description: Unarchive files
+  description:
+    - Unarchive local or remote files using the `bsdtar` utility.
+
+  requirements:
+    - bash
+    - bsdtar (provided by the libarchive-tools package)
+    - curl
+    - awk
+    - jq
+    - yq
+
+  attributes:
+    check_mode:
+      support: none
+    diff_mode:
+      support: none
+    platform:
+      platforms: posix
+
+  options:
+
+    src:
+      required: true
+      type: str
+      description:
+        - Source archive path or URL
+      version_added: 0.1.0
+
+    dest:
+      required: true
+      type: str
+      description:
+        - Destination directory
+      version_added: 0.1.0
+
+    include:
+      required: true
+      type: list
+      elements: str
+      description:
+        - This is equivalent to bsdtar's `--include` option.
+        - Process only the files or directories that match the specified glob patterns.
+        - `exclude` takes precedence over `include`.
+        - patterns are checked before applying `strip`.
+      version_added: 0.1.0
+
+    exclude:
+      required: true
+      type: list
+      elements: str
+      description:
+        - This is equivalent to bsdtar's `--exclude` option.
+        - Process only the files or directories that match the specified glob patterns.
+        - `exclude` takes precedence over `include`.
+        - include/exclude paths are checked before applying `strip`.
+      version_added: 0.1.0
+
+    bsdtar_opts:
+      type: str
+      description:
+        - Array of additional bsdtar options.
+      version_added: 0.1.0
+
+    token:
+      type: str
+      description:
+        - The authorization token for the provider's API.
+      version_added: 0.1.0
