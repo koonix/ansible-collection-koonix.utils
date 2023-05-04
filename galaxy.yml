@@ -1,9 +1,9 @@
 namespace: koonix
-name: semver
+name: utils
 version: 0.1.0
-description: your collection description
-repository: https://github.com/koonix/ansible-collections
-issues: https://github.com/koonix/ansible-collections/issues
+description: Some useful utilities
+repository: https://github.com/koonix/ansible-collection-koonix.utils
+issues: https://github.com/koonix/ansible-collection-koonix.utils/issues
 authors:
   - koonix <me@koonix.org>
 license:
@@ -11,9 +11,9 @@ license:
 tags:
   - collection
   - module
-  - version
-  - vcs
-  - scm
+  - semver
   - github
   - dockerhub
+  - vcs
+  - scm
 readme: README.md
