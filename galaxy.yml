@@ -1,7 +1,7 @@
 namespace: koonix
 name: utils
 version: 0.1.0
-description: Some useful utilities
+description: Some useful utilities.
 repository: https://github.com/koonix/ansible-collection-koonix.utils
 issues: https://github.com/koonix/ansible-collection-koonix.utils/issues
 authors:
