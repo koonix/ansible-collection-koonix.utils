@@ -268,7 +268,8 @@ succeed()
 
 urlencode()
 {
-	local len=${#1} LC_COLLATE=C c
+	local LC_ALL=C
+	local i c len=${#1}
 	for (( i = 0; i < len; i++ )); do
 		c=${1:$i:1}
 		case $c in
