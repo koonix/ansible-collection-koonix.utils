@@ -198,7 +198,7 @@ match_version()
 		pattern='^[vV]?\Q'"$pattern"'\E$'
 	fi
 	if [[ $METHOD == special ]] || [[ $METHOD == pcre ]]; then
-		pattern=${pattern//'/'/'\/'}
+		pattern=$(slash_escape "$pattern")
 		perl -e 'exit(!($ARGV[0] =~ /'"$pattern"'/))' "$version"
 	elif [[ $METHOD == eregex    ]]; then grep -qE "$pattern" <<< "$version"
 	elif [[ $METHOD == bregex    ]]; then grep -q "$pattern" <<< "$version"
@@ -283,6 +283,18 @@ urldecode()
 {
 	local str=${1//+/ }
 	printf '%b' "${str//%/\\x}"
+}
+
+slash_escape()
+{
+	while [[ $pattern == *__BB__* ]]; do
+		pattern=${pattern//__BB__/}
+	done
+	pattern=${pattern//'\\'/__BB__}
+	pattern=${pattern//'\/'/'/'}
+	pattern=${pattern//'/'/'\/'}
+	pattern=${pattern//__BB__/'\\'}
+	prnt "$pattern"
 }
 
 # ================
