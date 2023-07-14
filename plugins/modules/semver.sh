@@ -122,7 +122,7 @@ github_html()
 {
 	local after=${1:-} base='https://github.com'
 	local pattern='href="/'"$REPO"'/releases/tag/([^"]+)"'
-	pattern=${pattern//'/'/'\/'}
+	pattern=$(slash_escape "$pattern")
 	request \
 		"$base/$REPO/tags" \
 		${after:+--data-urlencode "after=$after"} \
@@ -288,7 +288,7 @@ urldecode()
 slash_escape()
 {
 	while [[ $pattern == *__BB__* ]]; do
-		pattern=${pattern//__BB__/}
+		pattern=${pattern//__BB__/''}
 	done
 	pattern=${pattern//'\\'/__BB__}
 	pattern=${pattern//'\/'/'/'}
